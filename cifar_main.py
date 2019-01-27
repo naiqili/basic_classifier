@@ -88,11 +88,9 @@ if use_cuda:
     torch.cuda.manual_seed_all(args.manualSeed)
 
 best_acc = 0  # best test accuracy
-niter = 0 # total number of iterations
-
 
 def main():
-    global best_acc, logger
+    global best_acc, logger, train_size
     start_epoch = args.start_epoch  # start from epoch 0 or last checkpoint epoch
 
     # Data
@@ -184,12 +182,15 @@ def main():
         
         print('Train Loss/Acc: %.2f/%.2f' % (train_loss, train_acc))
         
+        logger.add_train('Loss', train_loss, epoch)
+        logger.add_train('Top1', train_acc, epoch)
+        
         test_loss, test_acc = test(testloader, model, criterion, epoch, use_cuda)
         
         print('Test Loss/Acc: %.2f/%.2f' % (test_loss, test_acc))
         
-        logger.add_test('Loss', test_loss, niter)
-        logger.add_test('Top1', test_acc, niter)
+        logger.add_test('Loss', test_loss, epoch)
+        logger.add_test('Top1', test_acc, epoch)
 
         # append logger file
         logger.append([state['lr'], train_loss, test_loss, train_acc, test_acc])
@@ -211,8 +212,6 @@ def main():
     print(best_acc)
 
 def train(trainloader, model, criterion, optimizer, epoch, use_cuda):
-    global niter, logger
-    
     # switch to train mode
     model.train()
 
@@ -248,12 +247,7 @@ def train(trainloader, model, criterion, optimizer, epoch, use_cuda):
 
         # measure elapsed time
         batch_time.update(time.time() - end)
-        end = time.time()
-        
-        niter += 1
-        logger.add_train('Loss', loss.data.item(), niter)
-        logger.add_train('Top1', prec1.item(), niter)
-        
+        end = time.time()        
     return (losses.avg, top1.avg)
 
 def test(testloader, model, criterion, epoch, use_cuda):
@@ -307,6 +301,5 @@ def adjust_learning_rate(optimizer, epoch):
             param_group['lr'] = state['lr']
 
 if __name__ == '__main__':
-    print('in main')
     logger = Logger(args)
     main()

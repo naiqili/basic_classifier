@@ -8,7 +8,7 @@ __all__ = ['Logger']
 class Logger(object):
     '''Logger based on tensorboard.'''
     def __init__(self, args): 
-        print('Logger initializing...')
+        #print('Logger initializing...')
         self.dir = os.path.join(args.exp_dir, args.time_str)
         self.filename = args.exp_filename
         mkdir(self.dir)
